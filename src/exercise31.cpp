@@ -59,9 +59,9 @@ struct sort_string
 
 struct sort_by_x
 {
-    inline bool operator() (const Point2D& struct1, const Point2D& struct2)
+    inline bool operator() (const Segment& struct1, const Segment& struct2)
     {
-        return (struct1.x < struct2.x);
+        return (struct1.a.x < struct2.a.x);
     }
 };
 
@@ -77,7 +77,7 @@ int main() {
 
 void SweepLine(vector<Point2D> pointList,map<string,Segment> segments){
 
-	vector<Point2D> T;
+	vector<Segment> T;
 	vector<Point2D> Q=pointList;
 	vector<Point2D> I;
 	vector<string> idList;
@@ -91,27 +91,28 @@ void SweepLine(vector<Point2D> pointList,map<string,Segment> segments){
 			int index1=0;
 			int index2=0;
 			for(int i=0;i<T.size();i++){
-				if(T[i].id[0]==Q[0].id[0]){
+				if(T[i].id==Q[0].id[0]){
 					index1=i;
 				}
-				if(T[i].id[0]==Q[0].id[1]){
+				if(T[i].id==Q[0].id[1]){
 					index2=i;
 				}
 			}
-			Point2D saveSwap=T[index1];
-							T[index1]=T[index2];
-							T[index2]=saveSwap;
+			Segment saveSwap=T[index1];
+			T[index1]=T[index2];
+			T[index2]=saveSwap;
 
-							//ID fliping is the way that I got the same ouput in terms or ordering of T
-							string idSave=T[index1].id[0];
-							T[index1].id[0]=T[index2].id[0];
-							T[index2].id[0]=idSave;
+			//ID fliping is the way that I got the same ouput in terms or ordering of T
+			string idSave=T[index1].id;
+			T[index1].id=T[index2].id[0];
+			T[index2].id=idSave;
 			//cout << "SWAP" << " "<< T[index2].id[0] << " "<< T[index1].id[0] << endl;
 			sort(T.begin(),T.end(),sort_by_x());
 			Q.erase(Q.begin());
+
 		}else{
 			//Add in T and move sweep Line
-			T.push_back(Q[0]);
+			T.push_back(segments[Q[0].id[0]]);
 			idList.push_back(Q[0].id[0]);
 
 			//Delete from Q the end point
@@ -120,12 +121,13 @@ void SweepLine(vector<Point2D> pointList,map<string,Segment> segments){
 			//Delete from T if Repeat 2 times in idList final point of segment
 			if(count(idList.begin(),idList.end(),idList[idList.size()-1]) >=2){
 				for(int i=0;i<T.size();i++){
-					if(T[i].id[0]==idList[idList.size()-1]){
+					if(T[i].id==idList[idList.size()-1]){
 						T.erase(T.begin()+i);
 						i--;
 					}
 				}
 			}
+
 			sort(T.begin(),T.end(),sort_by_x());
 			sort(Q.begin(),Q.end(),sort_by_y());
 		}
@@ -135,17 +137,21 @@ void SweepLine(vector<Point2D> pointList,map<string,Segment> segments){
 		if(T.size()>=2){
 			//-1 avoid step out if array comparing pairs
 			for(int i=0;i<T.size()-1;i++){
-				Segment seg1=segments[T[i].id[0]];
-				Segment seg2=segments[T[i+1].id[0]];
+				Segment seg1=segments[T[i].id];
+				Segment seg2=segments[T[i+1].id];
 				if(Inter(seg1.a,seg1.b,seg2.a,seg2.b)){
+
 					Point2D intersection=InterPoint(seg1.a,seg1.b,seg2.a,seg2.b);
-					intersection.id.push_back(T[i].id[0]);
-					intersection.id.push_back(T[i+1].id[0]);
+
+					intersection.id.push_back(T[i].id);
+					intersection.id.push_back(T[i+1].id);
+
 					sort(intersection.id.begin(),intersection.id.end(),sort_string());
+
 					if(count(idList.begin(),idList.end(),intersection.id[0]+intersection.id[1]) == 0){
 						Q.push_back(intersection);
 						I.push_back(intersection);
-						cout << "INTER " << Q[Q.size()-1].id[0] << " " <<Q[Q.size()-1].id[1]<< "x:"<< Q[Q.size()-1].x << endl;
+						//cout << "INTER " << Q[Q.size()-1].id[0] << " " <<Q[Q.size()-1].id[1]<< "x:"<< Q[Q.size()-1].x << endl;
 						idList.push_back(intersection.id[0]+intersection.id[1]);
 						sort(Q.begin(),Q.end(),sort_by_y());
 					}
@@ -154,8 +160,9 @@ void SweepLine(vector<Point2D> pointList,map<string,Segment> segments){
 		}
 
 		//Write T information
+		//cout << "T size:" << T.size() << " " << T[0].id<< endl;
 		for(int i=0;i<T.size();i++){
-			cout << T[i].id[0];
+			cout << T[i].id;
 			if(i==T.size()-1){
 				cout << endl;
 			}else{
@@ -176,7 +183,7 @@ void SweepLine(vector<Point2D> pointList,map<string,Segment> segments){
 			break;
 		}
 	}
-	cout << "Intersection Num " << I.size();
+	//cout << "Intersection Num " << I.size();
 }
 
 void PrintPointList(vector<Point2D> pointList){
@@ -205,8 +212,15 @@ void GetPointList(vector<Point2D> &pointList,map<string, Segment> &segments){
 		point_b.id.push_back(id);
 		pointList.push_back(point_a);
 		pointList.push_back(point_b);
-		segment.a=point_a;
-		segment.b=point_b;
+
+		if(point_a.y>point_b.y){
+			segment.a=point_a;
+			segment.b=point_b;
+		}else{
+			segment.a=point_b;
+			segment.b=point_a;
+		}
+		segment.id=id;
 		segments.insert(pair<string,Segment>(id,segment));
 		count++;
 		if(count==num){
