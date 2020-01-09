@@ -22,6 +22,8 @@ class Point2D{
 public:
 	double x;
 	double y;
+	string upDown="NA";
+	string specific="NA";
 	vector<string> id;
 };
 
@@ -65,8 +67,30 @@ struct sort_by_x
     }
 };
 
+struct sort_by_x_point
+{
+    inline bool operator() (const Point2D& struct1, const Point2D& struct2)
+    {
+        return (struct1.x > struct2.x);
+    }
+};
+
+void printQ(vector<Point2D> Q){
+	//Wirte Q
+	for(int i=0;i<Q.size();i++){
+		if(Q[i].id.size()==2){
+			cout << Q[i].id[0] << " " << Q[i].id[1] << "-" << Q[i].specific << "-" << Q[i].upDown <<"(" << Q[i].x << " " << Q[i].y << ")" << ",";
+		}else{
+			cout << Q[i].id[0] << "-" << Q[i].upDown << "(" << Q[i].x << " " << Q[i].y << ")" << ",";
+		}
+
+	}
+	cout << endl;
+}
+
+map<string,Segment> segments;
 int main() {
-	map<string,Segment> segments;
+
 	vector<Point2D> pointList;
 	GetPointList(pointList,segments);
 	sort(pointList.begin(),pointList.end(),sort_by_y());
@@ -81,13 +105,89 @@ void SweepLine(vector<Point2D> pointList,map<string,Segment> segments){
 	vector<Point2D> Q=pointList;
 	vector<Point2D> I;
 	vector<string> idList;
+	vector<Point2D> newPoints;
+	vector<int> deleteIndexQ;
+
+	sort(Q.begin(),Q.end(),sort_by_y());
+	//filter Q by edge cases
+
+	//printQ(Q);
+
+	for(int i=0;i<Q.size()-1;i++){
+		if(Q[i].x==Q[i+1].x && Q[i].y==Q[i+1].y){
+
+			if(Q[i].upDown=="UP" && Q[i+1].upDown=="UP"){
+				Point2D newPoint;
+				newPoint.x=Q[i].x;
+				newPoint.y=Q[i].y;
+				newPoint.specific = "UP-E";
+				newPoint.id.push_back(Q[i].id[0]);
+				newPoint.id.push_back(Q[i+1].id[0]);
+				newPoints.push_back(newPoint);
+				deleteIndexQ.push_back(i);
+				deleteIndexQ.push_back(i+1);
+			}
+
+			if(Q[i].upDown=="DOWN" && Q[i+1].upDown=="DOWN"){
+				Point2D newPoint;
+				newPoint.x=Q[i].x;
+				newPoint.y=Q[i].y;
+				newPoint.specific = "DOWN-E";
+				newPoint.id.push_back(Q[i].id[0]);
+				newPoint.id.push_back(Q[i+1].id[0]);
+				newPoints.push_back(newPoint);
+				deleteIndexQ.push_back(i);
+				deleteIndexQ.push_back(i+1);
+			}
+
+			if(Q[i].upDown=="UP" && Q[i+1].upDown=="DOWN"){
+				Point2D newPoint;
+				newPoint.x=Q[i].x;
+				newPoint.y=Q[i].y;
+				newPoint.specific = "Up-DOWN-E";
+				newPoint.id.push_back(Q[i].id[0]);
+				newPoint.id.push_back(Q[i+1].id[0]);
+				newPoints.push_back(newPoint);
+				deleteIndexQ.push_back(i);
+				deleteIndexQ.push_back(i+1);
+			}
+
+			if(Q[i].upDown=="DOWN" && Q[i+1].upDown=="UP"){
+				Point2D newPoint;
+				newPoint.x=Q[i].x;
+				newPoint.y=Q[i].y;
+				newPoint.specific = "DOWN-UP-E";
+				newPoint.id.push_back(Q[i].id[0]);
+				newPoint.id.push_back(Q[i+1].id[0]);
+				newPoints.push_back(newPoint);
+				deleteIndexQ.push_back(i);
+				deleteIndexQ.push_back(i+1);
+			}
+		}
+	}
+	sort(deleteIndexQ.begin(), deleteIndexQ.end());
+
+	for(int i=deleteIndexQ.size()-1;i>=0;i--){
+		Q.erase(Q.begin()+deleteIndexQ[i]);
+	}
+
+	//cout << endl;
+
+	for(int i=0;i<newPoints.size();i++){
+		Q.push_back(newPoints[i]);
+	}
+
+	sort(Q.begin(),Q.end(),sort_by_y());
+
+	//printQ(Q);
+
 
 	while(true){
 		//Sort T in X and Q in Y
 		sort(T.begin(),T.end(),sort_by_x());
 		sort(Q.begin(),Q.end(),sort_by_y());
 
-		if(Q[0].id.size()==2){
+		if(Q[0].id.size()==2 && Q[0].specific=="NA"){
 			int index1=0;
 			int index2=0;
 			for(int i=0;i<T.size();i++){
@@ -103,32 +203,94 @@ void SweepLine(vector<Point2D> pointList,map<string,Segment> segments){
 			string idSave=T[index1].id;
 			T[index1].id=T[index2].id;
 			T[index2].id=idSave;
-			//cout << "SWAP" << " "<< T[index2].id[0] << " "<< T[index1].id[0] << endl;
+			//cout << "SWAP" << " " << T[index2].id << " "<< T[index1].id << endl;
 			sort(T.begin(),T.end(),sort_by_x());
+
 			Q.erase(Q.begin());
 
 		}else{
-			//Add in T and move sweep Line
-			T.push_back(segments[Q[0].id[0]]);
-			idList.push_back(Q[0].id[0]);
+			if(Q[0].specific == "UP-E"){
+				//If specific case of Point with two ups Then add them acoording to X
+				if(segments[Q[0].id[0]].b.x<segments[Q[0].id[1]].b.x){
+					T.push_back(segments[Q[0].id[0]]);
+					T.push_back(segments[Q[0].id[1]]);
 
-			//Delete from Q the end point
-			Q.erase(Q.begin());
+				}else{
+					T.push_back(segments[Q[0].id[1]]);
+					T.push_back(segments[Q[0].id[0]]);
+				}
 
-			//Delete from T if Repeat 2 times in idList final point of segment
-			if(count(idList.begin(),idList.end(),idList[idList.size()-1]) >=2){
+				idList.push_back(Q[0].id[0]);
+				idList.push_back(Q[0].id[1]);
+
+
+				Q.erase(Q.begin());
+			}else if(Q[0].specific == "UP-DOWN-E"){
+				// Case UP-Down replace UP
 				for(int i=0;i<T.size();i++){
-					if(T[i].id==idList[idList.size()-1]){
-						T.erase(T.begin()+i);
-						i--;
+					if(T[i].id==Q[0].id[1]){
+						T[i].id=Q[0].id[0];
 					}
 				}
+				idList.push_back(Q[0].id[1]);
+
+				Q.erase(Q.begin());
+
+			}else if(Q[0].specific == "DOWN-UP-E"){
+				// Case UP-Down replace DOWN
+				for(int i=0;i<T.size();i++){
+					if(T[i].id==Q[0].id[0]){
+						T[i].id=Q[0].id[1];
+					}
+				}
+
+				idList.push_back(Q[0].id[0]);
+
+				Q.erase(Q.begin());
+
+			}else if(Q[0].specific == "DOWN-E"){
+				for(int i=0;i<T.size();i++){
+					if(T[i].id==Q[0].id[0]){
+						T.erase(T.begin()+i);
+						break;
+					}
+				}
+
+				for(int i=0;i<T.size();i++){
+					if(T[i].id==Q[0].id[1]){
+						T.erase(T.begin()+i);
+						break;
+					}
+				}
+				//cout << "DOWN Case" << endl;
+				Q.erase(Q.begin());
+			}else{
+				//cout << "Normal Case" << endl;
+				//Normal case when there is no special condition of sharing points
+
+				//Add in T and move sweep Line
+				T.push_back(segments[Q[0].id[0]]);
+				idList.push_back(Q[0].id[0]);
+
+				//Delete from Q the end point
+				Q.erase(Q.begin());
+
+				//Delete from T if Repeat 2 times in idList final point of segment
+				if(count(idList.begin(),idList.end(),idList[idList.size()-1]) >=2){
+					for(int i=0;i<T.size();i++){
+						if(T[i].id==idList[idList.size()-1]){
+							//cout << "delete " << T[i].id << " " << T[i].id << endl;
+							T.erase(T.begin()+i);
+							i--;
+						}
+					}
+				}
+
 			}
 
 			sort(T.begin(),T.end(),sort_by_x());
 			sort(Q.begin(),Q.end(),sort_by_y());
 		}
-
 
 		//check Intersetions
 		if(T.size()>=2){
@@ -173,7 +335,13 @@ void SweepLine(vector<Point2D> pointList,map<string,Segment> segments){
 			float y=Q[i].y;
 			cout << fixed << std::setprecision(1) << x << " " << y << " ";
 		}
+
 		cout << endl;
+		/*cout << "idList:";
+		for(int i=0;i<idList.size();i++){
+			cout << idList[i] << " ";
+		}
+		cout << endl;*/
 
 		//Stop while if Q is empty
 		if(Q.size()==0){
@@ -205,18 +373,23 @@ void GetPointList(vector<Point2D> &pointList,map<string, Segment> &segments){
 		Segment segment;
 		string id;
 		ss >> id >>  point_a.x >> point_a.y >> point_b.x >> point_b.y;
+
+		if(point_a.y>point_b.y){
+			point_a.upDown="UP";
+			point_b.upDown="DOWN";
+			segment.a=point_a;
+			segment.b=point_b;
+		}else{
+			point_a.upDown="DOWN";
+			point_b.upDown="UP";
+			segment.a=point_b;
+			segment.b=point_a;
+		}
 		point_a.id.push_back(id);
 		point_b.id.push_back(id);
 		pointList.push_back(point_a);
 		pointList.push_back(point_b);
 
-		if(point_a.y>point_b.y){
-			segment.a=point_a;
-			segment.b=point_b;
-		}else{
-			segment.a=point_b;
-			segment.b=point_a;
-		}
 		segment.id=id;
 		segments.insert(pair<string,Segment>(id,segment));
 		count++;
@@ -234,37 +407,6 @@ bool Inter(Point2D a, Point2D b,Point2D p, Point2D q){
         return true;
     }
     return false;
-/*
-    //Segment intersection
-    if( ORI(a,b,p)*ORI(a,b,q)==0 && ORI(p,q,a)*ORI(p,q,b)==0){
-
-        //Segment one line has same x and y in both points return point cord
-        if(a.x==b.x && a.y==b.y){
-        	Point2D point=a;
-            return point;
-        }
-
-        if(p.x==q.x && p.y==q.y){
-        	Point2D point=q;
-            return point;
-        }
-
-        //Segment where lines have a common point
-        if(((b.x==p.x && b.y==p.y) || (a.x==p.x && a.y==p.y)) && !((b.x==q.x && b.y==q.y) || (a.x==q.x && a.y==q.y))){
-        	Point2D point=p;
-            return point;
-        }
-
-        if(((b.x==q.x && b.y==q.y) || (a.x==q.x && a.y==q.y)) && !((b.x==p.x && b.y==p.y) || (a.x==p.x && a.y==p.y))){
-        	Point2D point=q;
-        	return point;
-        }
-
-        //return "segment intersection";
-        return NULL;
-    }
-    //return "no intersection";
-    return NULL;*/
 }
 
 int ORI(Point2D p1, Point2D p2,Point2D p3){
