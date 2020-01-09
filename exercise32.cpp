@@ -1,10 +1,5 @@
-//============================================================================
-// Name        : Ex3.cpp
 // Author      : Gabriel De Ioannes
-// Version     :
-// Copyright   : Your copyright notice
-// Description : Hello World in C++, Ansi-style
-//============================================================================
+// author 	   : Sagar Nagaraj
 
 #include <iostream>
 #include <fstream>
