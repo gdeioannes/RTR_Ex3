@@ -20,8 +20,8 @@ using namespace std;
 
 class Point2D{
 public:
-	double x;
-	double y;
+	long double x;
+	long double y;
 	vector<string> id;
 };
 
@@ -234,44 +234,13 @@ bool Inter(Point2D a, Point2D b,Point2D p, Point2D q){
         return true;
     }
     return false;
-/*
-    //Segment intersection
-    if( ORI(a,b,p)*ORI(a,b,q)==0 && ORI(p,q,a)*ORI(p,q,b)==0){
-
-        //Segment one line has same x and y in both points return point cord
-        if(a.x==b.x && a.y==b.y){
-        	Point2D point=a;
-            return point;
-        }
-
-        if(p.x==q.x && p.y==q.y){
-        	Point2D point=q;
-            return point;
-        }
-
-        //Segment where lines have a common point
-        if(((b.x==p.x && b.y==p.y) || (a.x==p.x && a.y==p.y)) && !((b.x==q.x && b.y==q.y) || (a.x==q.x && a.y==q.y))){
-        	Point2D point=p;
-            return point;
-        }
-
-        if(((b.x==q.x && b.y==q.y) || (a.x==q.x && a.y==q.y)) && !((b.x==p.x && b.y==p.y) || (a.x==p.x && a.y==p.y))){
-        	Point2D point=q;
-        	return point;
-        }
-
-        //return "segment intersection";
-        return NULL;
-    }
-    //return "no intersection";
-    return NULL;*/
 }
 
 int ORI(Point2D p1, Point2D p2,Point2D p3){
-	double dx21 = p2.x - p1.x;
-	double dy21 = p2.y - p1.y;
-	double dx31 = p3.x - p1.x;
-	double dy31 = p3.y - p1.y;
+	long double dx21 = p2.x - p1.x;
+	long double dy21 = p2.y - p1.y;
+	long double dx31 = p3.x - p1.x;
+	long double dy31 = p3.y - p1.y;
 	if (dx21*dy31 < dy21*dx31) return -1; // ccw
 
 	if (dx21*dy31 > dy21*dx31) return +1; // cw
@@ -285,23 +254,23 @@ int ORI(Point2D p1, Point2D p2,Point2D p3){
 
 string GetPointCords(Point2D a){
     ostringstream text;
-    text << fixed << std::setprecision(2) << (double)(a.x) << " " << std::setprecision(2) << (double)(a.y);
+    text << fixed << std::setprecision(2) << (long double)(a.x) << " " << std::setprecision(2) << (long double)(a.y);
     return text.str();
 }
 
 Point2D InterPoint(Point2D a, Point2D b,Point2D p, Point2D q){
 
 	// Line AB represented as a1x + b1y = c1
-	double a1 =b.y - a.y;
-	double b1 = a.x - b.x;
-	double c1 = a1*(a.x) + b1*(a.y);
+	long double a1 =b.y - a.y;
+	long double b1 = a.x - b.x;
+	long double c1 = a1*(a.x) + b1*(a.y);
 
 	// Line CD represented as a2x + b2y = c2
-	double a2 = q.y - p.y;
-	double b2 = p.x - q.x;
-	double c2 = a2*(p.x)+ b2*(p.y);
+	long double a2 = q.y - p.y;
+	long double b2 = p.x - q.x;
+	long double c2 = a2*(p.x)+ b2*(p.y);
 
-	double determinant = a1*b2 - a2*b1;
+	long double determinant = a1*b2 - a2*b1;
 
 	Point2D point;
 	if (determinant == 0)
@@ -312,10 +281,11 @@ Point2D InterPoint(Point2D a, Point2D b,Point2D p, Point2D q){
 	}
 	else
 	{
-		double x = (b2*c1 - b1*c2)/determinant;
-		double y = (a1*c2 - a2*c1)/determinant;
+		long double x = (b2*c1 - b1*c2)/determinant;
+		long double y = (a1*c2 - a2*c1)/determinant;
 		point.x=x;
 		point.y=y;
+		cout << "Inter " << x << " " << y << endl;
 		return point;
 	}
 }
