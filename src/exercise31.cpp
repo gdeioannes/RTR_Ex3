@@ -39,7 +39,6 @@ void SweepLine(vector<Point2D> pointList,map<string,Segment> segments);
 int ORI(Point2D p1, Point2D p2,Point2D p3);
 bool Inter(Point2D a, Point2D b,Point2D p, Point2D q);
 Point2D InterPoint(Point2D a, Point2D b,Point2D p, Point2D q);
-string GetPointCords(Point2D a);
 
 struct sort_by_y
 {
@@ -154,6 +153,7 @@ void SweepLine(vector<Point2D> pointList,map<string,Segment> segments){
 					}
 				}
 			}
+			sort(Q.begin(),Q.end(),sort_by_y());
 		}
 
 		//Write T information
@@ -252,11 +252,6 @@ int ORI(Point2D p1, Point2D p2,Point2D p3){
 	return 0; // p3 is inside p1,p2
 }
 
-string GetPointCords(Point2D a){
-    ostringstream text;
-    text << fixed << std::setprecision(2) << (long double)(a.x) << " " << std::setprecision(2) << (long double)(a.y);
-    return text.str();
-}
 
 Point2D InterPoint(Point2D a, Point2D b,Point2D p, Point2D q){
 
@@ -285,7 +280,8 @@ Point2D InterPoint(Point2D a, Point2D b,Point2D p, Point2D q){
 		long double y = (a1*c2 - a2*c1)/determinant;
 		point.x=x;
 		point.y=y;
-		cout << "Inter " << x << " " << y << endl;
+		cout << std::setprecision(10);
+		//cout << "Inter " << x << " " << y << endl;
 		return point;
 	}
 }

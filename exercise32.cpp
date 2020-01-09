@@ -20,8 +20,8 @@ using namespace std;
 
 class Point2D{
 public:
-	double x;
-	double y;
+	long double x;
+	long double y;
 	string upDown="NA";
 	string specific="NA";
 	vector<string> id;
@@ -144,7 +144,7 @@ void SweepLine(vector<Point2D> pointList,map<string,Segment> segments){
 				Point2D newPoint;
 				newPoint.x=Q[i].x;
 				newPoint.y=Q[i].y;
-				newPoint.specific = "Up-DOWN-E";
+				newPoint.specific = "UP-DOWN-E";
 				newPoint.id.push_back(Q[i].id[0]);
 				newPoint.id.push_back(Q[i+1].id[0]);
 				newPoints.push_back(newPoint);
@@ -199,6 +199,7 @@ void SweepLine(vector<Point2D> pointList,map<string,Segment> segments){
 				}
 			}
 
+
 			//ID fliping is the way that I got the same ouput in terms or ordering of T
 			string idSave=T[index1].id;
 			T[index1].id=T[index2].id;
@@ -210,6 +211,7 @@ void SweepLine(vector<Point2D> pointList,map<string,Segment> segments){
 
 		}else{
 			if(Q[0].specific == "UP-E"){
+			    //cout << "UP-E" << endl;
 				//If specific case of Point with two ups Then add them acoording to X
 				if(segments[Q[0].id[0]].b.x<segments[Q[0].id[1]].b.x){
 					T.push_back(segments[Q[0].id[0]]);
@@ -227,6 +229,7 @@ void SweepLine(vector<Point2D> pointList,map<string,Segment> segments){
 				Q.erase(Q.begin());
 			}else if(Q[0].specific == "UP-DOWN-E"){
 				// Case UP-Down replace UP
+				//cout << "UP-DOWN-E" << endl;
 				for(int i=0;i<T.size();i++){
 					if(T[i].id==Q[0].id[1]){
 						T[i].id=Q[0].id[0];
@@ -238,6 +241,7 @@ void SweepLine(vector<Point2D> pointList,map<string,Segment> segments){
 
 			}else if(Q[0].specific == "DOWN-UP-E"){
 				// Case UP-Down replace DOWN
+				//cout << "DOWN-UP-E" << endl;
 				for(int i=0;i<T.size();i++){
 					if(T[i].id==Q[0].id[0]){
 						T[i].id=Q[0].id[1];
@@ -249,6 +253,7 @@ void SweepLine(vector<Point2D> pointList,map<string,Segment> segments){
 				Q.erase(Q.begin());
 
 			}else if(Q[0].specific == "DOWN-E"){
+			    //cout << "DOWN-E" << endl;
 				for(int i=0;i<T.size();i++){
 					if(T[i].id==Q[0].id[0]){
 						T.erase(T.begin()+i);
@@ -410,10 +415,10 @@ bool Inter(Point2D a, Point2D b,Point2D p, Point2D q){
 }
 
 int ORI(Point2D p1, Point2D p2,Point2D p3){
-	double dx21 = p2.x - p1.x;
-	double dy21 = p2.y - p1.y;
-	double dx31 = p3.x - p1.x;
-	double dy31 = p3.y - p1.y;
+	long double dx21 = p2.x - p1.x;
+	long double dy21 = p2.y - p1.y;
+	long double dx31 = p3.x - p1.x;
+	long double dy31 = p3.y - p1.y;
 	if (dx21*dy31 < dy21*dx31) return -1; // ccw
 
 	if (dx21*dy31 > dy21*dx31) return +1; // cw
@@ -434,16 +439,16 @@ string GetPointCords(Point2D a){
 Point2D InterPoint(Point2D a, Point2D b,Point2D p, Point2D q){
 
 	// Line AB represented as a1x + b1y = c1
-	double a1 =b.y - a.y;
-	double b1 = a.x - b.x;
-	double c1 = a1*(a.x) + b1*(a.y);
+	float a1 =b.y - a.y;
+	float b1 = a.x - b.x;
+	float c1 = a1*(a.x) + b1*(a.y);
 
 	// Line CD represented as a2x + b2y = c2
-	double a2 = q.y - p.y;
-	double b2 = p.x - q.x;
-	double c2 = a2*(p.x)+ b2*(p.y);
+	float a2 = q.y - p.y;
+	float b2 = p.x - q.x;
+	float c2 = a2*(p.x)+ b2*(p.y);
 
-	double determinant = a1*b2 - a2*b1;
+	float determinant = a1*b2 - a2*b1;
 
 	Point2D point;
 	if (determinant == 0)
@@ -454,10 +459,12 @@ Point2D InterPoint(Point2D a, Point2D b,Point2D p, Point2D q){
 	}
 	else
 	{
-		double x = (b2*c1 - b1*c2)/determinant;
-		double y = (a1*c2 - a2*c1)/determinant;
+		float x = (b2*c1 - b1*c2)/determinant;
+		float y = (a1*c2 - a2*c1)/determinant;
 		point.x=x;
 		point.y=y;
+
+		//cout << "Inter: " << x << " " << y << endl;
 		return point;
 	}
 }
